@@ -86,8 +86,6 @@ class CalculatedProgress:
 
 def calc_progress() -> CalculatedProgress:
     # Sum up DOL section sizes
-    dol_handle = None
-
     try:
         dol_handle = open(DOL_PATH, "rb")
     except FileNotFoundError:
@@ -130,9 +128,8 @@ def calc_progress() -> CalculatedProgress:
         dol_code_size += i
 
     # Open map file
-    mapfile = None
     try:
-        mapfile = open(MAP_PATH, "rb")
+        mapfile = open(MAP_PATH, "r")
     except FileNotFoundError:
         return None
     symbols = mapfile.readlines()

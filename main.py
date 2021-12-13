@@ -29,7 +29,7 @@ def exec_cmd(cmd, return_code, shell=True):
     stdout = None
 
     for command in commands:
-        process = subprocess.Popen(command, shell=shell, cwd=repoPath, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, shell=shell, cwd=repoPath, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout = process.communicate()[0]
         process.wait()
 
@@ -80,7 +80,7 @@ def calc_progress():
 
 
 if os.path.isdir('tempRepo'):
-   shutil.rmtree('/tempRepo', ignore_errors=True)
+    shutil.rmtree('/tempRepo', ignore_errors=True)
 
 # Clone into tempRepo
 if os.system('git clone https://github.com/doldecomp/melee/ tempRepo') != 0:
@@ -126,7 +126,7 @@ while True:
     if current_commit_id == commit_iteration_end_checker.commit_id and commit_iteration_end_checker.inclusive:
         break
 
-    stash_changes() # make sure that mwcc_compiler doesn't get cleaned up
+    stash_changes()  # make sure that mwcc_compiler doesn't get cleaned up
     if checkout_previous_commit() != 0:
         break
     pop_stash_changes()
@@ -134,7 +134,7 @@ while True:
 with open('result.csv', 'a' if old_csv_exists else 'w') as file:
     wr = csv.writer(file)
 
-    for commitData in collectedData.reverse():
+    for commitData in reversed(collectedData):
         wr.writerow([
             commitData.commit_id,
             commitData.commit_date,
