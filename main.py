@@ -79,28 +79,29 @@ def calc_progress():
     return calcprogress.calc_progress()
 
 
-if os.path.isdir('tempRepo'):
-    shutil.rmtree('/tempRepo', ignore_errors=True)
+#if os.path.isdir('tempRepo'):
+#    shutil.rmtree('/tempRepo', ignore_errors=True)
 
 # Clone into tempRepo
-if os.system('git clone https://github.com/doldecomp/melee/ tempRepo') != 0:
-    sys.exit(-1)
+#if os.system('git clone https://github.com/doldecomp/melee/ tempRepo') != 0:
+#    sys.exit(-1)
 
 checkout_master()
 pull()
 
-shutil.copytree(mwcc_compiler_path, os.path.join(repoPath, "tools/mwcc_compiler"))
+#shutil.copytree(mwcc_compiler_path, os.path.join(repoPath, "tools/mwcc_compiler"))
 
 old_csv_exists = os.path.isfile('result.csv')
 commit_iteration_end_checker = CommitIterationEndChecker('02e4891dec6f734c672d2bdc157062c4b7fcae1b', inclusive=True)
 
 if old_csv_exists:
-    with open('result.csv', 'r') as file:
+    with open('result.csv', 'r', newline='') as file:
         reader = csv.reader(file)
 
         last_row = None
         for commitData in reader:
-            last_row = commitData
+            if len(commitData) >= 1:
+                last_row = commitData
         commit_iteration_end_checker = CommitIterationEndChecker(last_row[0], inclusive=False)
 
 collectedData = []
@@ -131,7 +132,7 @@ while True:
         break
     pop_stash_changes()
 
-with open('result.csv', 'a' if old_csv_exists else 'w') as file:
+with open('result.csv', 'a' if old_csv_exists else 'w', newline='') as file:
     wr = csv.writer(file)
 
     for commitData in reversed(collectedData):
