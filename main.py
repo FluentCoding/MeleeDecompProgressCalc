@@ -79,17 +79,14 @@ def calc_progress():
     return calcprogress.calc_progress()
 
 
-#if os.path.isdir('tempRepo'):
-#    shutil.rmtree('/tempRepo', ignore_errors=True)
-
 # Clone into tempRepo
-#if os.system('git clone https://github.com/doldecomp/melee/ tempRepo') != 0:
-#    sys.exit(-1)
+if not os.path.isdir('tempRepo') and os.system('git clone https://github.com/doldecomp/melee/ tempRepo') != 0:
+    sys.exit(-1)
 
 checkout_master()
 pull()
 
-#shutil.copytree(mwcc_compiler_path, os.path.join(repoPath, "tools/mwcc_compiler"))
+# shutil.copytree(mwcc_compiler_path, os.path.join(repoPath, "tools/mwcc_compiler"))
 
 old_csv_exists = os.path.isfile('result.csv')
 commit_iteration_end_checker = CommitIterationEndChecker('02e4891dec6f734c672d2bdc157062c4b7fcae1b', inclusive=True)
