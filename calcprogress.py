@@ -131,7 +131,7 @@ def calc_progress() -> CalculatedProgress:
     try:
         mapfile = open(MAP_PATH, "r")
     except FileNotFoundError:
-        return None
+        return
     symbols = mapfile.readlines()
 
     decomp_code_size = 0
@@ -140,13 +140,18 @@ def calc_progress() -> CalculatedProgress:
 
     # Find first section
     first_section = 0
-    while (symbols[first_section].startswith(".") == False and "section layout" not in symbols[
-        first_section]): first_section += 1
-    assert (first_section < len(symbols)), "Map file contains no sections!!!"
+    while not symbols[first_section].startswith(".") and "section layout" not in symbols[first_section]:
+        first_section += 1
+        if len(symbols) == first_section:
+            break
+
+    if first_section >= len(symbols):
+        print("Map file contains no sections!!!")
+        return
 
     for i in range(first_section, len(symbols)):
         # New section
-        if (symbols[i].startswith(".") == True or "section layout" in symbols[i]):
+        if symbols[i].startswith(".") == True or "section layout" in symbols[i]:
             # Grab section name (i.e. ".init section layout" -> "init")
             sectionName = re.search(r"\.*(?P<Name>\w+)\s", symbols[i]).group("Name")
             # Determine type of section
