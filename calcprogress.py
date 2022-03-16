@@ -51,9 +51,9 @@ REGEX_TO_USE = MW_GC_SYMBOL_REGEX
 
 TEXT_SECTIONS = ["init", "text"]
 DATA_SECTIONS = [
-    "rodata", "data", "bss", "sdata", "sbss", "sdata2", "sbss2", "file",
+    "rodata", "data", "bss", "sdata", "sbss", "sdata2", "sbss2",
     "ctors", "_ctors", "dtors", "ctors$99", "_ctors$99", "ctors$00", "dtors$99",
-    "extab_", "extabindex_"
+    "extab_", "extabindex_", "_extab", "_exidx"
 ]
 
 # DOL info
@@ -149,6 +149,10 @@ def calc_progress() -> CalculatedProgress:
         print("Map file contains no sections!!!")
         return
 
+    cur_object = None
+    cur_size = 0
+    j = 0
+
     for i in range(first_section, len(symbols)):
         # New section
         if symbols[i].startswith(".") == True or "section layout" in symbols[i]:
@@ -158,11 +162,28 @@ def calc_progress() -> CalculatedProgress:
             section_type = SECTION_DATA if (sectionName in DATA_SECTIONS) else SECTION_TEXT
         # Parse symbols until we hit the next section declaration
         else:
-            if ("entry of" in symbols[i]) or ("UNUSED" in symbols[i]): continue
-            assert (section_type != None), f"Symbol found outside of a section!!!\n{symbols[i]}"
+            if "UNUSED" in symbols[i]:
+                continue
+            if "entry of" in symbols[i]:
+                if j == i - 1:
+                    if section_type == SECTION_TEXT:
+                        decomp_code_size -= cur_size
+                    else:
+                        decomp_data_size -= cur_size
+                    cur_size = 0
+                    # print(f"Line* {j}: {symbols[j]}")
+                # print(f"Line {i}: {symbols[i]}")
+                continue
+            assert section_type is not None, f"Symbol found outside of a section!!!\n{symbols[i]}"
             match_obj = re.search(REGEX_TO_USE, symbols[i])
             # Should be a symbol in ASM (so we discard it)
-            if (match_obj == None): continue
+            if match_obj is None:
+                # print(f"Line {i}: {symbols[i]}")
+                continue
+                # Has the object file changed?
+            last_object = cur_object
+            cur_object = match_obj.group("Object").strip()
+            if last_object != cur_object: continue
             # Is the symbol a file-wide section?
             symb = match_obj.group("Symbol")
             if (symb.startswith("*fill*")) or (
@@ -170,10 +191,12 @@ def calc_progress() -> CalculatedProgress:
             # For sections that don't start with "."
             if (symb in DATA_SECTIONS): continue
             # If not, we accumulate the file size
+            cur_size = int(match_obj.group("Size"), 16)
+            j = i
             if (section_type == SECTION_TEXT):
-                decomp_code_size += int(match_obj.group("Size"), 16)
+                decomp_code_size += cur_size
             else:
-                decomp_data_size += int(match_obj.group("Size"), 16)
+                decomp_data_size += cur_size
 
     # Calculate percentages
     codeCompletionPcnt = (decomp_code_size / dol_code_size)
